@@ -1,0 +1,28 @@
+# Render blueprint — https://render.com/docs/blueprint-spec
+#
+# This deploys the PUBLIC DEMO: SEED_DEMO=true creates the shared demo account.
+# For a deployment holding real user data, set SEED_DEMO=false,
+# PROVIDER_SYNC_SIMULATED=false, and move to PostgreSQL (see db/schema.postgres.sql).
+#
+# Note: the free plan has an ephemeral disk, so the SQLite file (and the demo
+# data) resets on every deploy/restart. Attach a persistent disk for durability.
+services:
+  - type: web
+    name: subwatch
+    runtime: node
+    plan: free
+    buildCommand: npm ci --no-audit --no-fund && npm --prefix client ci --no-audit --no-fund && npm run build:server && npm --prefix client run build
+    startCommand: npm run start:prod
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true          # Render generates a strong random secret
+      - key: COOKIE_SECURE
+        value: "true"
+      - key: SEED_DEMO
+        value: "true"
+      - key: PROVIDER_SYNC_SIMULATED
+        value: "true"
